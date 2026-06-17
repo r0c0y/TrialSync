@@ -90,10 +90,19 @@ export async function initDb() {
         name VARCHAR(255) NOT NULL,
         indication VARCHAR(255) NOT NULL,
         status VARCHAR(100) NOT NULL,
+        band_room_id VARCHAR(255),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    try {
+      await pool!.query(`
+        ALTER TABLE trials ADD COLUMN IF NOT EXISTS band_room_id VARCHAR(255);
+      `);
+    } catch (err) {
+      console.warn('Trials table alteration warning (ignored if column exists):', err);
+    }
 
     // 2. Documents table
     await pool!.query(`
@@ -214,7 +223,7 @@ export const db = {
   // Create trial
   createTrial: async (id: string, name: string, indication: string, status: string) => {
     if (isFallback) {
-      const newTrial = { id, name, indication, status, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      const newTrial = { id, name, indication, status, band_room_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
       mockDb.trials.push(newTrial);
       return newTrial;
     }
@@ -238,6 +247,23 @@ export const db = {
     const res = await pool!.query(
       'UPDATE trials SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
       [status, id]
+    );
+    return res.rows[0];
+  },
+
+  // Update trial band room id
+  updateTrialBandRoom: async (id: string, bandRoomId: string | null) => {
+    if (isFallback) {
+      const trial = mockDb.trials.find((t) => t.id === id);
+      if (trial) {
+        trial.band_room_id = bandRoomId;
+        trial.updated_at = new Date().toISOString();
+      }
+      return trial;
+    }
+    const res = await pool!.query(
+      'UPDATE trials SET band_room_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      [bandRoomId, id]
     );
     return res.rows[0];
   },

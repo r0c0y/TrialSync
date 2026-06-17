@@ -1,5 +1,17 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { db, logAuditTrail } from './db';
+import { band } from './band';
+
+async function notifyBandRoom(trialId: string, sender: string, message: string) {
+  try {
+    const trial = await db.getTrial(trialId);
+    if (trial && trial.band_room_id) {
+      await band.sendMessage(trialId, trial.band_room_id, sender, message);
+    }
+  } catch (err) {
+    console.error('Error notifying Band room:', err);
+  }
+}
 
 // Initialize Gemini Client if API key is present
 const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -24,6 +36,7 @@ export async function runLiteratureScout(trialId: string, docContents: string[])
     'Literature Scout Agent started analyzing uploaded literature.',
     'System triggered literature scout agent.'
   );
+  await notifyBandRoom(trialId, 'Literature Scout Agent', 'Starting clinical literature analysis to build the trial evidence base...');
 
   const combinedText = docContents.join('\n\n');
   let evidenceBrief: any = null;
@@ -132,6 +145,11 @@ export async function runLiteratureScout(trialId: string, docContents: string[])
     'Literature Scout Agent successfully generated the Evidence Brief.',
     'Saved structured evidence brief.'
   );
+  await notifyBandRoom(
+    trialId,
+    'Literature Scout Agent',
+    `Evidence synthesis complete. Extracted ${evidenceBrief.safety_signals.length} safety signals and ${evidenceBrief.efficacy.length} efficacy endpoints.`
+  );
 
   return evidenceBrief;
 }
@@ -146,6 +164,11 @@ export async function runProtocolDesigner(trialId: string, introduceConflict: bo
     'Protocol Draft',
     'Protocol Design Agent started drafting study protocol.',
     'System triggered protocol designer agent.'
+  );
+  await notifyBandRoom(
+    trialId,
+    'Protocol Designer Agent',
+    `Drafting study protocol${introduceConflict ? ' (simulating safety and design inconsistencies to verify compliance filters)' : ''}...`
   );
 
   const briefRecord = await db.getEvidenceBrief(trialId);
@@ -267,6 +290,11 @@ export async function runProtocolDesigner(trialId: string, introduceConflict: bo
     'Protocol Design Agent drafted Protocol v1.0.',
     'Saved protocol v1.0.'
   );
+  await notifyBandRoom(
+    trialId,
+    'Protocol Designer Agent',
+    `Protocol Draft v1.0 compiled. Inclusion criteria: ${protocolSections.inclusion_criteria.length} rules, Exclusion criteria: ${protocolSections.exclusion_criteria.length} rules, Primary endpoint: "${protocolSections.primary_endpoint}".`
+  );
 
   return protocolSections;
 }
@@ -282,6 +310,7 @@ export async function runStatisticalAnalyst(trialId: string) {
     'Statistical Agent started designing analysis plan and sample size calculations.',
     'System triggered statistical analyst agent.'
   );
+  await notifyBandRoom(trialId, 'Statistical Analyst Agent', 'Commencing power calculations and sample size estimates...');
 
   const protocolRecord = await db.getProtocol(trialId);
   if (!protocolRecord) {
@@ -353,6 +382,11 @@ export async function runStatisticalAnalyst(trialId: string) {
     'Statistical Agent completed SAP v1.0.',
     'Saved SAP v1.0.'
   );
+  await notifyBandRoom(
+    trialId,
+    'Statistical Analyst Agent',
+    `Statistical Analysis Plan (SAP) generated. Power: ${sapContent.power_calculation.power * 100}%, Alpha: ${sapContent.power_calculation.alpha}, Sample Size: ${sapContent.power_calculation.calculated_sample_size}.`
+  );
 
   return sapContent;
 }
@@ -375,6 +409,7 @@ export async function runRegulatoryComplianceReview(trialId: string) {
       'Regulatory Agent check was BLOCKED due to state lock. Waiting for Statistical Agent completion.',
       'Agent state lock active.'
     );
+    await notifyBandRoom(trialId, 'Regulatory Agent', 'Regulatory compliance review check BLOCKED by state lock: Waiting for Statistical Analysis Plan (SAP) to be finalized.');
     return {
       status: 'BLOCKED',
       message: 'State lock active: Regulatory review requires the Statistical Analysis Plan (SAP) to be finalized first.'
@@ -390,6 +425,7 @@ export async function runRegulatoryComplianceReview(trialId: string) {
     'Regulatory Agent started consistency review.',
     'System triggered regulatory agent review.'
   );
+  await notifyBandRoom(trialId, 'Regulatory Agent', 'Commencing compliance and design consistency review between evidence briefing, protocol draft, and SAP...');
 
   const briefRecord = await db.getEvidenceBrief(trialId);
   const protocolRecord = await db.getProtocol(trialId);
@@ -493,6 +529,19 @@ export async function runRegulatoryComplianceReview(trialId: string) {
     `Regulatory review complete. Conflicts found: ${conflictsList.length}. Status updated to: ${status}`,
     'Audit checks completed.'
   );
+  if (conflictsList.length > 0) {
+    await notifyBandRoom(
+      trialId,
+      'Regulatory Agent',
+      `Compliance review complete. Status: CONFLICT_DETECTED. Detected ${conflictsList.length} safety/design discrepancies. Review recommendations in the Conflicts Hub.`
+    );
+  } else {
+    await notifyBandRoom(
+      trialId,
+      'Regulatory Agent',
+      `Compliance review complete. Status: APPROVED. Protocol design aligns perfectly with evidence-based safety parameters and statistical power criteria.`
+    );
+  }
 
   return {
     status,

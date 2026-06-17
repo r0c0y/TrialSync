@@ -15,6 +15,28 @@ async function main() {
   if (!trial) throw new Error('Failed to retrieve created trial.');
   console.log('✓ Trial project created successfully.');
 
+  // Test Band room linking database actions
+  console.log('\n1.5. Testing Band.ai room linking operations...');
+  const testRoomId = 'chat_room_mock_12345';
+  await db.updateTrialBandRoom(trialId, testRoomId);
+  const trialWithRoom = await db.getTrial(trialId);
+  if (trialWithRoom.band_room_id === testRoomId) {
+    console.log('✓ Successfully linked and persisted Band room ID.');
+  } else {
+    throw new Error('Failed to persist Band room ID.');
+  }
+
+  await db.updateTrialBandRoom(trialId, null);
+  const trialWithoutRoom = await db.getTrial(trialId);
+  if (trialWithoutRoom.band_room_id === null || trialWithoutRoom.band_room_id === undefined) {
+    console.log('✓ Successfully unlinked Band room ID.');
+  } else {
+    throw new Error('Failed to clear Band room ID.');
+  }
+
+  // Restore the testRoomId for agent run notifications test
+  await db.updateTrialBandRoom(trialId, testRoomId);
+
   // Check state lock on Regulatory Agent before files/documents are ready
   console.log('\n2. Verifying Regulatory Agent state locks...');
   const initialReview = await runRegulatoryComplianceReview(trialId);

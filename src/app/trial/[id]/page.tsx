@@ -35,6 +35,130 @@ export default function TrialWorkspace({ params }: { params: Promise<{ id: strin
   const [resolutionRationals, setResolutionRationals] = useState<{ [key: string]: string }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Band.ai States
+  const [bandRooms, setBandRooms] = useState<any[]>([]);
+  const [fetchingRooms, setFetchingRooms] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('');
+  const [bandError, setBandError] = useState<string | null>(null);
+  const [linking, setLinking] = useState(false);
+  const [testSending, setTestSending] = useState(false);
+
+  const fetchBandRooms = async () => {
+    setFetchingRooms(true);
+    setBandError(null);
+    try {
+      const res = await fetch('/api/band/rooms');
+      const json = await res.json();
+      if (json.error) {
+        setBandError(json.error);
+      } else {
+        setBandRooms(json.rooms || []);
+      }
+    } catch (err: any) {
+      setBandError(err.message);
+    } finally {
+      setFetchingRooms(false);
+    }
+  };
+
+  const handleCreateBandRoom = async () => {
+    setLinking(true);
+    setBandError(null);
+    try {
+      const res = await fetch('/api/band/link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trialId, action: 'CREATE_ROOM' }),
+      });
+      const json = await res.json();
+      if (json.error) {
+        setBandError(json.error);
+      } else {
+        fetchData();
+        fetchBandRooms();
+      }
+    } catch (err: any) {
+      setBandError(err.message);
+    } finally {
+      setLinking(false);
+    }
+  };
+
+  const handleLinkBandRoom = async (roomId: string) => {
+    if (!roomId) return;
+    setLinking(true);
+    setBandError(null);
+    try {
+      const res = await fetch('/api/band/link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trialId, action: 'LINK_ROOM', roomId }),
+      });
+      const json = await res.json();
+      if (json.error) {
+        setBandError(json.error);
+      } else {
+        fetchData();
+        fetchBandRooms();
+      }
+    } catch (err: any) {
+      setBandError(err.message);
+    } finally {
+      setLinking(false);
+    }
+  };
+
+  const handleUnlinkBandRoom = async () => {
+    setLinking(true);
+    setBandError(null);
+    try {
+      const res = await fetch('/api/band/link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trialId, action: 'UNLINK_ROOM' }),
+      });
+      const json = await res.json();
+      if (json.error) {
+        setBandError(json.error);
+      } else {
+        fetchData();
+        fetchBandRooms();
+      }
+    } catch (err: any) {
+      setBandError(err.message);
+    } finally {
+      setLinking(false);
+    }
+  };
+
+  const handleSendTestMessage = async () => {
+    if (!data?.trial?.band_room_id) return;
+    setTestSending(true);
+    try {
+      const res = await fetch('/api/band/link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trialId,
+          action: 'SEND_MESSAGE',
+          roomId: data.trial.band_room_id,
+          sender: 'Decision Orchestrator',
+          message: '⚡ Manual connectivity test: Connection to TrialSync is active and validated.'
+        }),
+      });
+      const json = await res.json();
+      if (json.error) {
+        alert(`Test failed: ${json.error}`);
+      } else {
+        alert('Connectivity test message sent successfully!');
+      }
+    } catch (err: any) {
+      alert(`Error sending test: ${err.message}`);
+    } finally {
+      setTestSending(false);
+    }
+  };
+
   const fetchData = async () => {
     try {
       const res = await fetch(`/api/trials/${trialId}`);
@@ -51,6 +175,7 @@ export default function TrialWorkspace({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     fetchData();
+    fetchBandRooms();
   }, [trialId]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,9 +293,9 @@ export default function TrialWorkspace({ params }: { params: Promise<{ id: strin
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className={`w-2 h-2 rounded-full ${trial.band_room_id ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-650'}`} />
               <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                Room: {trial.id}-COORDINATE
+                {trial.band_room_id ? `Room: ${trial.band_room_id.substring(0, 16)}...` : 'Band: Not Connected'}
               </span>
             </div>
           </div>
@@ -230,6 +355,117 @@ export default function TrialWorkspace({ params }: { params: Promise<{ id: strin
                 <span>Regulatory Approval</span>
               </div>
             </div>
+          </div>
+
+          {/* Band Collaboration Room Card */}
+          <div className="p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 backdrop-blur-sm space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
+              Band.ai Integration
+              <Activity className={`w-3.5 h-3.5 ${trial.band_room_id ? 'text-emerald-400 animate-pulse' : 'text-zinc-600'}`} />
+            </h3>
+
+            {trial.band_room_id ? (
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-xl border border-emerald-950 bg-emerald-950/10 flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-zinc-200">Collaboration Room</span>
+                    <span className="text-[9px] font-mono font-bold uppercase text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded border border-emerald-400/20">
+                      Connected
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-500 truncate" title={trial.band_room_id}>
+                    ID: {trial.band_room_id}
+                  </span>
+                </div>
+
+                <a
+                  href={`https://app.band.ai/chats/${trial.band_room_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  Open Band Chat <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={handleSendTestMessage}
+                    disabled={testSending}
+                    className="py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-850 text-zinc-300 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    {testSending ? 'Testing...' : 'Test Ping'}
+                  </button>
+                  <button
+                    onClick={handleUnlinkBandRoom}
+                    disabled={linking}
+                    className="py-2 px-3 rounded-lg bg-zinc-950 hover:bg-red-950/20 border border-zinc-900 hover:border-red-900/30 text-zinc-500 hover:text-red-400 text-xs font-semibold transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="p-3 border border-zinc-900 bg-zinc-950 rounded-xl text-center text-[11px] text-zinc-500 leading-relaxed">
+                  Connect this clinical trial to a Band.ai room to coordinate agents in real time.
+                </div>
+
+                <button
+                  onClick={handleCreateBandRoom}
+                  disabled={linking}
+                  className="w-full py-2.5 px-3 rounded-lg bg-blue-650 hover:bg-blue-600 disabled:opacity-50 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                >
+                  {linking ? 'Creating Room...' : 'Create Collaboration Room'}
+                </button>
+
+                <div className="space-y-2 pt-2 border-t border-zinc-900/50">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
+                    Link Existing Room
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedRoomId}
+                      onChange={(e) => setSelectedRoomId(e.target.value)}
+                      disabled={fetchingRooms || bandRooms.length === 0}
+                      className="flex-1 bg-zinc-950 border border-zinc-900 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-zinc-850 disabled:opacity-50"
+                    >
+                      <option value="">
+                        {fetchingRooms
+                          ? 'Loading rooms...'
+                          : bandRooms.length === 0
+                          ? 'No rooms found'
+                          : 'Select room...'}
+                      </option>
+                      {bandRooms.map((room) => (
+                        <option key={room.id} value={room.id}>
+                          {room.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => handleLinkBandRoom(selectedRoomId)}
+                      disabled={linking || !selectedRoomId}
+                      className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-850 text-zinc-300 text-xs font-semibold transition-colors disabled:opacity-50"
+                    >
+                      Link
+                    </button>
+                  </div>
+                </div>
+
+                {bandError && (
+                  <div className="p-3.5 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-400 space-y-2 text-[11px] leading-relaxed">
+                    <div className="flex items-start gap-1.5 font-bold text-xs">
+                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                      Band API Setup
+                    </div>
+                    <p>{bandError}</p>
+                    <p className="text-[10px] text-zinc-500 border-t border-amber-500/10 pt-2">
+                      Tip: Apply promo code <strong className="text-white">BANDHACK26</strong> on your <a href="https://app.band.ai" target="_blank" rel="noreferrer" className="underline text-blue-400">Band dashboard</a> to unlock human API access.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Multi-Agent Rooms panel */}

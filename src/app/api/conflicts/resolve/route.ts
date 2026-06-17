@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db, logAuditTrail } from '@/lib/db';
+import { band } from '@/lib/band';
 
 export async function POST(req: Request) {
   try {
@@ -139,6 +140,21 @@ export async function POST(req: Request) {
       customRationale || 'Audit compliance check resolved.'
     );
 
+    // Send update to Band room
+    try {
+      const trial = await db.getTrial(trialId);
+      if (trial && trial.band_room_id) {
+        await band.sendMessage(
+          trialId,
+          trial.band_room_id,
+          'Decision Orchestrator',
+          `Resolved conflict: ${conflict.type} (${conflictId}). Choice: ${resolutionOption === 'ACCEPT_RECOMMENDATION' ? 'Accept Recommendation' : 'Maintain Design'}. Rationale: "${customRationale || 'Standard clinical justification.'}"`
+        );
+      }
+    } catch (err) {
+      console.error('Error sending resolve message to Band:', err);
+    }
+
     // 5. Evaluate if all conflicts for the trial are now resolved
     const activeConflicts = await db.getConflicts(trialId);
     const openConflicts = activeConflicts.filter((c) => c.status === 'OPEN');
@@ -154,6 +170,21 @@ export async function POST(req: Request) {
         'All conflicts resolved. Trial status updated to: APPROVED_REGULATORY.',
         'Final regulatory approval clearance.'
       );
+
+      // Send status change to Band room
+      try {
+        const trial = await db.getTrial(trialId);
+        if (trial && trial.band_room_id) {
+          await band.sendMessage(
+            trialId,
+            trial.band_room_id,
+            'Decision Orchestrator',
+            '🎉 SUCCESS: All open conflicts resolved. Trial status has been updated to APPROVED_REGULATORY. Protocol v1.x cleared for FDA IND submission!'
+          );
+        }
+      } catch (err) {
+        console.error('Error sending all-clear message to Band:', err);
+      }
     }
 
     return NextResponse.json({ success: true, changeDetails });
