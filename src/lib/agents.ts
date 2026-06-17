@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { db, logAuditTrail } from './db';
 
 // Initialize Gemini Client if API key is present
@@ -6,11 +6,10 @@ const geminiApiKey = process.env.GEMINI_API_KEY;
 let ai: any = null;
 
 if (geminiApiKey) {
-  // Use GoogleGenAI standard constructor or new GoogleGenAI({ apiKey })
   try {
-    ai = new GoogleGenAI({ apiKey: geminiApiKey });
+    ai = new GoogleGenerativeAI(geminiApiKey);
   } catch (err) {
-    console.error('Error initializing GoogleGenAI:', err);
+    console.error('Error initializing GoogleGenerativeAI:', err);
   }
 }
 

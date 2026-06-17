@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, 
@@ -24,8 +24,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-export default function TrialWorkspace({ params }: { params: { id: string } }) {
-  const trialId = params.id;
+export default function TrialWorkspace({ params }: { params: Promise<{ id: string }> }) {
+  const { id: trialId } = use(params);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'evidence' | 'protocol' | 'sap' | 'conflicts' | 'audit'>('evidence');

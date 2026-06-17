@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db, logAuditTrail } from '@/lib/db';
-import pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 
 export async function POST(req: Request) {
   try {
@@ -23,7 +23,8 @@ export async function POST(req: Request) {
 
     if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
       try {
-        const parsed = await pdfParse(buffer);
+        const parser = new PDFParse(new Uint8Array(buffer));
+        const parsed = await parser.getText();
         extractedText = parsed.text;
       } catch (err) {
         console.error('pdf-parse failed, trying basic text extraction:', err);
