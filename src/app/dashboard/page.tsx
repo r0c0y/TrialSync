@@ -76,19 +76,21 @@ export default function Dashboard() {
   const activeCount = totalTrials - approvedCount;
 
   return (
-    <div className="min-h-screen bg-[#030303] text-zinc-100 font-sans flex flex-col">
+    <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
       {/* Top Header */}
-      <header className="border-b border-zinc-900 bg-black/40 backdrop-blur-md sticky top-0 z-30">
+      <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center">
-              <Activity className="w-4 h-4 text-white" />
+            <Link href="/" className="grid size-6 place-items-center rounded-sm bg-foreground hover:bg-accent transition-colors">
+              <span className="size-1.5 rounded-full bg-accent-foreground" />
             </Link>
-            <span className="font-bold tracking-tight text-lg text-zinc-200">TrialSync Board</span>
+            <span className="font-mono text-sm font-bold uppercase tracking-[0.15em] text-foreground">
+              TrialSync Board
+            </span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-zinc-500 font-medium">
+          <div className="flex items-center gap-4 text-xs font-mono uppercase tracking-[0.18em] text-muted">
             <span>21 CFR Part 11 Audit Active</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse-dot" />
           </div>
         </div>
       </header>
@@ -98,16 +100,16 @@ export default function Dashboard() {
         {/* Welcome and Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">
-              Clinical Workspace
+            <h1 className="text-3xl font-extrabold tracking-[-0.03em] mb-1">
+              Workspace board
             </h1>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-muted">
               Manage and coordinate multi-agent protocol design for active drug candidates.
             </p>
           </div>
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 transition-colors text-white text-sm font-semibold active:scale-95 shadow-lg shadow-blue-600/10"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-foreground hover:bg-accent text-background hover:text-accent-foreground transition-colors text-sm font-medium"
           >
             <Plus className="w-4 h-4" />
             Create Clinical Trial
@@ -115,98 +117,98 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-          <div className="p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 backdrop-blur-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-md border border-border bg-border mb-10">
+          <div className="bg-background p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Active Trials</span>
-              <FolderOpen className="w-4 h-4 text-zinc-500" />
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Active Trials</span>
+              <FolderOpen className="w-4 h-4 text-muted" />
             </div>
-            <div className="text-3xl font-bold text-white">{activeCount}</div>
-            <p className="text-[10px] text-zinc-500 mt-1">Currently in-flight design cycles</p>
+            <div className="font-serif text-3xl tracking-tight">{activeCount}</div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted mt-1">Currently in-flight</p>
           </div>
 
-          <div className="p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 backdrop-blur-sm">
+          <div className="bg-background p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Conflicts Raised</span>
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Conflicts Raised</span>
+              <AlertTriangle className="w-4 h-4 text-accent animate-pulse" />
             </div>
-            <div className="text-3xl font-bold text-amber-500">{conflictsCount}</div>
-            <p className="text-[10px] text-zinc-500 mt-1">Require immediate lead reviewer input</p>
+            <div className="font-serif text-3xl tracking-tight text-accent">{conflictsCount}</div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted mt-1">Reviewer input required</p>
           </div>
 
-          <div className="p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 backdrop-blur-sm">
+          <div className="bg-background p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Regulatory Approvals</span>
-              <CheckCircle className="w-4 h-4 text-emerald-500" />
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Regulatory Approvals</span>
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
             </div>
-            <div className="text-3xl font-bold text-emerald-500">{approvedCount}</div>
-            <p className="text-[10px] text-zinc-500 mt-1">Cleared for FDA IND submission</p>
+            <div className="font-serif text-3xl tracking-tight text-emerald-600">{approvedCount}</div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted mt-1">FDA IND Submission ready</p>
           </div>
 
-          <div className="p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 backdrop-blur-sm">
+          <div className="bg-background p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Est. Time Saved</span>
-              <TrendingUp className="w-4 h-4 text-blue-400" />
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Est. Time Saved</span>
+              <TrendingUp className="w-4 h-4 text-foreground/75" />
             </div>
-            <div className="text-3xl font-bold text-blue-400">{approvedCount * 4 || 8} Weeks</div>
-            <p className="text-[10px] text-zinc-500 mt-1">Timeline acceleration vs. sequential close</p>
+            <div className="font-serif text-3xl tracking-tight">{approvedCount * 4 || 8} Weeks</div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted mt-1">vs sequential workflow</p>
           </div>
         </div>
 
         {/* Filter and Search */}
         <div className="flex items-center gap-4 mb-6">
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search trials by name or indication..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-950/50 border border-zinc-900 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-800 transition-colors"
+              className="w-full bg-background border border-border rounded-sm py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-muted focus:border-foreground focus:outline-none transition-colors"
             />
           </div>
         </div>
 
         {/* Trials List */}
         {loading ? (
-          <div className="py-20 text-center text-zinc-500 text-sm">
+          <div className="py-20 text-center text-muted font-mono text-xs uppercase tracking-[0.2em]">
             Loading trials...
           </div>
         ) : filteredTrials.length === 0 ? (
-          <div className="py-20 rounded-2xl border border-dashed border-zinc-900 text-center">
-            <FolderOpen className="w-10 h-10 text-zinc-700 mx-auto mb-4" />
-            <h3 className="font-bold text-zinc-400 mb-1">No Clinical Trials Found</h3>
-            <p className="text-xs text-zinc-600 max-w-xs mx-auto mb-6">
+          <div className="py-20 rounded-md border border-dashed border-border text-center bg-surface/30">
+            <FolderOpen className="w-8 h-8 text-muted mx-auto mb-4" />
+            <h3 className="font-bold text-sm text-foreground mb-1">No Clinical Trials Found</h3>
+            <p className="text-xs text-muted max-w-xs mx-auto mb-6">
               Create a new trial project to begin coordinating clinical evidence with your design team.
             </p>
             <button 
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-850 text-white text-xs font-semibold border border-zinc-800"
+              className="px-4 py-2 rounded-sm bg-foreground hover:bg-accent text-background hover:text-accent-foreground text-xs font-semibold transition-colors"
             >
               Add First Trial
             </button>
           </div>
         ) : (
-          <div className="border border-zinc-900 rounded-2xl overflow-hidden bg-zinc-950/20 backdrop-blur-sm">
-            <div className="divide-y divide-zinc-900">
+          <div className="border border-border rounded-md overflow-hidden bg-surface/20">
+            <div className="divide-y divide-border">
               {filteredTrials.map((trial) => (
                 <Link 
                   href={`/trial/${trial.id}`} 
                   key={trial.id}
-                  className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-950/80 transition-colors group"
+                  className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-surface transition-colors group"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <h3 className="font-bold text-white group-hover:text-blue-400 transition-colors">
+                    <div className="flex items-center gap-3 mb-1.5">
+                      <h3 className="font-bold text-base text-foreground group-hover:text-accent transition-colors">
                         {trial.name}
                       </h3>
-                      <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
+                      <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted">
                         {trial.id}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-zinc-400">
-                      <span>Indication: <strong className="text-zinc-300">{trial.indication}</strong></span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                    <div className="flex items-center gap-4 text-xs text-muted">
+                      <span>Indication: <strong className="text-foreground font-medium">{trial.indication}</strong></span>
+                      <span className="w-1 h-1 rounded-full bg-border" />
                       <span>Created: {new Date(trial.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
@@ -215,38 +217,38 @@ export default function Dashboard() {
                     {/* Status Badge */}
                     <div className="text-right">
                       {trial.status === 'INITIAL' && (
-                        <span className="px-2.5 py-1 text-[11px] font-semibold rounded bg-zinc-900 border border-zinc-800 text-zinc-400 uppercase tracking-wider">
+                        <span className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded bg-surface border border-border text-muted">
                           Ready for Evidence
                         </span>
                       )}
                       {trial.status === 'EVIDENCE_COMPLETE' && (
-                        <span className="px-2.5 py-1 text-[11px] font-semibold rounded bg-blue-950/50 border border-blue-900/50 text-blue-400 uppercase tracking-wider">
+                        <span className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded bg-blue-500/5 border border-blue-500/15 text-blue-600">
                           Evidence Ready
                         </span>
                       )}
                       {trial.status === 'PROTOCOL_DRAFT_COMPLETE' && (
-                        <span className="px-2.5 py-1 text-[11px] font-semibold rounded bg-purple-950/50 border border-purple-900/50 text-purple-400 uppercase tracking-wider">
+                        <span className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded bg-purple-500/5 border border-purple-500/15 text-purple-600">
                           Protocol Drafted
                         </span>
                       )}
                       {trial.status === 'SAP_COMPLETE' && (
-                        <span className="px-2.5 py-1 text-[11px] font-semibold rounded bg-amber-950/50 border border-amber-900/50 text-amber-400 uppercase tracking-wider">
+                        <span className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded bg-amber-500/5 border border-amber-500/15 text-amber-600">
                           SAP Finalized
                         </span>
                       )}
                       {trial.status === 'CONFLICT_DETECTED' && (
-                        <span className="px-2.5 py-1 text-[11px] font-semibold rounded bg-red-950/50 border border-red-900/50 text-red-400 uppercase tracking-wider animate-pulse">
+                        <span className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded bg-accent/5 border border-accent/15 text-accent animate-pulse-dot">
                           Conflict Detected
                         </span>
                       )}
                       {trial.status === 'APPROVED_REGULATORY' && (
-                        <span className="px-2.5 py-1 text-[11px] font-semibold rounded bg-emerald-950/50 border border-emerald-900/50 text-emerald-400 uppercase tracking-wider">
+                        <span className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded bg-emerald-500/5 border border-emerald-500/15 text-emerald-600">
                           Cleared (FDA)
                         </span>
                       )}
                     </div>
 
-                    <ChevronRight className="w-5 h-5 text-zinc-700 group-hover:text-zinc-400 transition-colors group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="w-4 h-4 text-muted group-hover:text-foreground transition-colors group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </Link>
               ))}
@@ -257,19 +259,19 @@ export default function Dashboard() {
 
       {/* Create Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-zinc-950 border border-zinc-900 rounded-2xl p-6 shadow-2xl animate-scale-up">
-            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-blue-500" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-background border border-border rounded-md p-6 shadow-xl">
+            <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-accent" />
               New Clinical Trial Project
             </h2>
-            <p className="text-xs text-zinc-500 mb-6">
+            <p className="text-xs text-muted mb-6">
               Create a new trial record. All downstream agent workflows will start from this project workspace.
             </p>
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-muted mb-1.5">
                   Trial Project Name
                 </label>
                 <input
@@ -278,18 +280,18 @@ export default function Dashboard() {
                   placeholder="e.g. Zylastin-B Crohn's Phase 2b Study"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-zinc-700"
+                  className="w-full bg-background border border-border rounded-sm px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-muted mb-1.5">
                   Indication Type
                 </label>
                 <select
                   value={indication}
                   onChange={(e) => setIndication(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-zinc-700"
+                  className="w-full bg-background border border-border rounded-sm px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none"
                 >
                   <option value="Crohn's Disease">Crohn's Disease</option>
                   <option value="Ulcerative Colitis">Ulcerative Colitis</option>
@@ -297,18 +299,18 @@ export default function Dashboard() {
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-900">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border mt-6">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-xs font-semibold text-muted hover:text-foreground transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-colors text-white text-xs font-semibold"
+                  className="px-4 py-2 rounded-sm bg-foreground hover:bg-accent text-background hover:text-accent-foreground text-xs font-semibold transition-colors disabled:opacity-50"
                 >
                   {creating ? 'Creating...' : 'Initialize Workspace'}
                 </button>
