@@ -302,8 +302,9 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section className="mx-auto max-w-7xl px-6 pb-20 pt-20 md:pt-28">
-        <div className="mb-14 max-w-4xl">
+      <section className="relative mx-auto max-w-7xl px-6 pb-20 pt-20 md:pt-28 overflow-hidden">
+        <div className="hero-grid" />
+        <div className="relative z-10 mb-14 max-w-4xl">
           <Reveal>
             <div className="mb-7 inline-flex items-center gap-2 rounded-sm border border-accent/15 bg-accent/[0.05] px-2.5 py-1.5">
               <span className="size-1.5 rounded-full bg-accent animate-pulse-dot" />
@@ -788,7 +789,7 @@ export default function Home() {
       <GlobalCoPilot />
 
       {/* Footer */}
-      <footer className="border-t border-border bg-surface/50 px-6 py-12">
+      <footer className="relative footer-glow border-t border-border bg-background px-6 py-12">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex items-center gap-3">
             <span className="grid size-5 place-items-center rounded-sm bg-foreground">
