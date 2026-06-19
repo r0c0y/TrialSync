@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
 
 export async function POST() {
   const demoUser = {
@@ -6,10 +7,18 @@ export async function POST() {
     email: 'demo@trialsync.dev',
     name: 'Clinical Lead (Demo)',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo&backgroundColor=b6e3f4',
-    role: 'Clinical Research Director'
+    role: 'Clinical Research Director',
+    isDemo: true,
   }
 
-  const token = Buffer.from(JSON.stringify({ ...demoUser, exp: Date.now() + 86400000 * 30 })).toString('base64')
+  const response = NextResponse.json(demoUser)
 
-  return NextResponse.json({ user: demoUser, token })
+  response.cookies.set('trialsync_session', JSON.stringify(demoUser), {
+    path: '/',
+    maxAge: 86400 * 30,
+    sameSite: 'lax',
+    httpOnly: false,
+  })
+
+  return response
 }

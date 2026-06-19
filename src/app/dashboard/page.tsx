@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import UserMenu from '@/components/UserMenu';
+import GlobalCoPilot from '@/components/GlobalCoPilot';
+import TrialDataPopup from '@/components/TrialDataPopup';
 
 // ── Status config ──────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; cls: string; dot: string }> = {
@@ -180,6 +182,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'conflict' | 'approved' | 'active'>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [showTrialPopup, setShowTrialPopup] = useState(false);
 
   const fetchTrials = useCallback(async () => {
     try {
@@ -203,6 +206,13 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => { fetchTrials(); }, [fetchTrials]);
+
+  useEffect(() => {
+    if (!loading && trials.length === 0) {
+      const dismissed = sessionStorage.getItem('trialsync-popup-dismissed')
+      if (!dismissed) setShowTrialPopup(true)
+    }
+  }, [loading, trials.length])
 
   const handleRefresh = () => { setRefreshing(true); fetchTrials(); };
 
@@ -503,6 +513,16 @@ export default function Dashboard() {
           </div>
         </aside>
       </div>
+
+      {/* ── Global CoPilot ── */}
+      <GlobalCoPilot />
+
+      {/* ── Trial Data Popup ── */}
+      <TrialDataPopup
+        isOpen={showTrialPopup}
+        onClose={() => { setShowTrialPopup(false); sessionStorage.setItem('trialsync-popup-dismissed', 'true') }}
+        onComplete={() => { fetchTrials(); sessionStorage.setItem('trialsync-popup-dismissed', 'true') }}
+      />
 
       {/* ── Create Modal ── */}
       {showCreateModal && (

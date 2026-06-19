@@ -37,25 +37,39 @@ export async function GET(request: Request) {
     }
 
     // Fetch GitHub user info
-    const userRes = await fetch('https://api.github.com/user', {
+    const ghRes = await fetch('https://api.github.com/user', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
-    const ghUser = await userRes.json();
+    const ghUser = await ghRes.json();
 
-    // Build session payload
+    // Fetch email if not public
+    let email = ghUser.email;
+    if (!email) {
+      try {
+        const emailRes = await fetch('https://api.github.com/user/emails', {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+        const emails = await emailRes.json();
+        const primary = emails?.find((e: any) => e.primary && e.verified);
+        if (primary) email = primary.email;
+      } catch {}
+    }
+
+    // Build session
     const session = {
-      email: ghUser.email || `${ghUser.login}@github.com`,
+      id: `github-${ghUser.id}`,
+      email: email || `${ghUser.login}@github.com`,
       name: ghUser.name || ghUser.login,
       role: 'Clinical Program Lead',
       isDemo: false,
-      avatar: ghUser.login?.slice(0, 1)?.toUpperCase() || 'G',
+      avatar: ghUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${ghUser.login}&backgroundColor=b6e3f4`,
       githubLogin: ghUser.login,
     };
 
     const response = NextResponse.redirect(new URL(redirectTo, request.url));
     response.cookies.set('trialsync_session', JSON.stringify(session), {
       path: '/',
-      maxAge: 86400,
+      maxAge: 86400 * 30,
       sameSite: 'lax',
       httpOnly: false,
     });

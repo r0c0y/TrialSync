@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import UserMenu from "@/components/UserMenu";
+import GlobalCoPilot from "@/components/GlobalCoPilot";
 
 // ───────────────────────────────────────────────────────────
 // Reusable: reveal on scroll
@@ -783,8 +784,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Global CoPilot */}
+      <GlobalCoPilot />
+
       {/* Footer */}
-      <footer className="border-border bg-background px-6 py-12">
+      <footer className="border-t border-border bg-surface/50 px-6 py-12">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex items-center gap-3">
             <span className="grid size-5 place-items-center rounded-sm bg-foreground">
@@ -801,11 +805,16 @@ export default function Home() {
             <a href="#" className="hover:text-foreground">Platform</a>
             <a href="#" className="hover:text-foreground">Security</a>
             <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Contact</a>
+            <a href="mailto:ranchoguruji07@gmail.com" className="hover:text-foreground">Contact</a>
           </div>
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-            © 2026 TrialSync Inc.
-          </span>
+          <div className="flex items-center gap-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+              © 2026 TrialSync Inc.
+            </span>
+            <a href="mailto:ranchoguruji07@gmail.com" className="font-mono text-[10px] text-accent hover:underline">
+              ranchoguruji07@gmail.com
+            </a>
+          </div>
         </div>
       </footer>
     </main>
