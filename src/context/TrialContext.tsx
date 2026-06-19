@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { useBandWebSocket, WsMessage } from '@/hooks/useBandWebSocket';
+import { playAgentComplete, playConflictAlert } from '@/lib/sounds';
 
 export interface ChatMessage {
   id: string;
@@ -290,6 +291,7 @@ export function TrialProvider({ trialId, children }: { trialId: string; children
           type: 'thought'
         });
       } else if (log.action === 'AGENT_COMPLETE') {
+        playAgentComplete();
         let agentName = log.role;
         let reasoningPath = undefined;
         
@@ -865,6 +867,7 @@ export function TrialProvider({ trialId, children }: { trialId: string; children
       if (!res.ok || !json) throw new Error(json?.error || 'Regulatory compliance review failed.');
 
       if (json.status === 'CONFLICT_DETECTED') {
+        playConflictAlert();
         postToBand('Regulatory Auditor', 'tool_result', `Audit complete: ${json.conflicts.length} conflicts detected between evidence and protocol design`, undefined, { conflict_count: json.conflicts.length, status: 'CONFLICT_DETECTED' });
         addMsg('Regulatory Agent', 'AI Specialist', `Compliance review complete. Status: CONFLICT_DETECTED. Identified ${json.conflicts.length} design discrepancies. Surfaced to Conflicts Hub.`, 'error', {
           thought: 'Run compliance checks for liver limits, kidney filters, and endpoint durations.',

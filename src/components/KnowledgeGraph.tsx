@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { playClick } from '@/lib/sounds';
 import { ZoomIn, ZoomOut, Maximize2, RefreshCw } from 'lucide-react';
 
 interface KGNode {
@@ -551,8 +552,11 @@ export default function KnowledgeGraph({
       const cy = e.clientY - rect.top;
       const moved = Math.abs(cx - dragRef.current.ox) + Math.abs(cy - dragRef.current.oy);
       if (moved < 5) {
-        setSelectedNode(dragRef.current.node);
-        onNodeClick?.(dragRef.current.node);
+        playClick();
+        if (dragRef.current.node) {
+          setSelectedNode(dragRef.current.node);
+          onNodeClick?.(dragRef.current.node);
+        }
       }
       dragRef.current = null;
     }
