@@ -113,12 +113,13 @@ export default function WorkspaceNav({
       <header className="border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-30 h-[var(--topbar-h)]">
         <div className="max-w-[1600px] w-full mx-auto px-8 h-full flex items-center justify-between gap-3">
           {/* Left: back + trial name */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <Link
               href="/dashboard"
-              className="p-1.5 rounded-md hover:bg-surface text-muted hover:text-foreground transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-surface text-muted hover:text-foreground transition-colors shrink-0 text-xs font-medium"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Home</span>
             </Link>
             <span className="w-px h-5 bg-border shrink-0" />
             <div className="min-w-0">
