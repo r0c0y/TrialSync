@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import ThemeInit from "@/components/ThemeInit";
+import { AuthProvider } from "@/context/AuthContext";
 
 const sans = Inter({
   variable: "--font-sans",
@@ -34,7 +36,12 @@ export default function RootLayout({
       lang="en"
       className={`${sans.variable} ${mono.variable} ${serif.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ThemeInit />
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

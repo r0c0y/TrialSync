@@ -816,25 +816,51 @@ export default function TrialWorkspace({ params }: { params: Promise<{ id: strin
 
                     <div>
                       <h3 className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted mb-2">2. Inclusion Criteria</h3>
-                      <ul className="space-y-2 text-xs text-muted">
-                        {protocol.sections_json.inclusion_criteria.map((c: string, i: number) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <span className="text-accent font-bold shrink-0">•</span>
-                            <span className="text-foreground">{c}</span>
-                          </li>
-                        ))}
+                      <ul className="space-y-3 text-xs text-muted">
+                        {protocol.sections_json.inclusion_criteria.map((c: any, i: number) => {
+                          const text = typeof c === 'string' ? c : c?.criterion || '';
+                          const justification = typeof c === 'object' && c?.justification ? c.justification : null;
+                          const source = typeof c === 'object' && c?.evidence_source ? c.evidence_source : null;
+                          return (
+                            <li key={i} className="flex flex-col gap-1 border-b border-border/20 pb-2 last:border-0 last:pb-0">
+                              <div className="flex items-start gap-2">
+                                <span className="text-accent font-bold shrink-0">•</span>
+                                <span className="text-foreground">{text}</span>
+                              </div>
+                              {justification && (
+                                <div className="pl-4 text-[10px] text-muted leading-relaxed">
+                                  <span className="font-semibold text-foreground/80">Justification:</span> {justification}
+                                  {source && <span className="italic ml-1">({source})</span>}
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
 
                     <div>
                       <h3 className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted mb-2">3. Exclusion Criteria</h3>
-                      <ul className="space-y-2 text-xs text-muted">
-                        {protocol.sections_json.exclusion_criteria.map((c: string, i: number) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <span className="text-accent font-bold shrink-0">•</span>
-                            <span className="text-foreground">{c}</span>
-                          </li>
-                        ))}
+                      <ul className="space-y-3 text-xs text-muted">
+                        {protocol.sections_json.exclusion_criteria.map((c: any, i: number) => {
+                          const text = typeof c === 'string' ? c : c?.criterion || '';
+                          const justification = typeof c === 'object' && c?.justification ? c.justification : null;
+                          const source = typeof c === 'object' && c?.evidence_source ? c.evidence_source : null;
+                          return (
+                            <li key={i} className="flex flex-col gap-1 border-b border-border/20 pb-2 last:border-0 last:pb-0">
+                              <div className="flex items-start gap-2">
+                                <span className="text-accent font-bold shrink-0">•</span>
+                                <span className="text-foreground">{text}</span>
+                              </div>
+                              {justification && (
+                                <div className="pl-4 text-[10px] text-muted leading-relaxed">
+                                  <span className="font-semibold text-foreground/80">Justification:</span> {justification}
+                                  {source && <span className="italic ml-1">({source})</span>}
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
 
@@ -853,11 +879,20 @@ export default function TrialWorkspace({ params }: { params: Promise<{ id: strin
                         Assumptions Flagged
                       </h3>
                       <div className="space-y-3">
-                        {protocol.sections_json.assumptions.map((a: string, i: number) => (
-                          <div key={i} className="p-3 rounded-md border border-border bg-background text-xs text-muted leading-relaxed">
-                            {a}
-                          </div>
-                        ))}
+                        {protocol.sections_json.assumptions.map((a: any, i: number) => {
+                          const text = typeof a === 'string' ? a : a?.assumption || '';
+                          const support = typeof a === 'object' && a?.evidence_support ? a.evidence_support : null;
+                          const risk = typeof a === 'object' && a?.risk_if_wrong ? a.risk_if_wrong : null;
+                          const mitigation = typeof a === 'object' && a?.mitigation ? a.mitigation : null;
+                          return (
+                            <div key={i} className="p-3 rounded border border-border bg-surface/20 text-xs text-muted leading-relaxed space-y-1.5">
+                              <p className="text-foreground font-semibold">{text}</p>
+                              {support && <p className="text-[10px]"><span className="text-foreground/75 font-semibold">Evidence Support:</span> {support}</p>}
+                              {risk && <p className="text-[10px] text-red-400/80"><span className="text-foreground/75 font-semibold">Risk if Wrong:</span> {risk}</p>}
+                              {mitigation && <p className="text-[10px] text-emerald-400/80"><span className="text-foreground/75 font-semibold">Mitigation:</span> {mitigation}</p>}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

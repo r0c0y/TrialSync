@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { cache } from '@/lib/cache';
+import { band } from '@/lib/band';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -17,6 +19,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const conflicts = await db.getConflicts(trialId);
     const decisionLogs = await db.getDecisionLogs(trialId);
     const auditTrail = await db.getAuditTrail(trialId);
+    const agentProgress = await db.getAgentProgress(trialId);
+    const cacheStats = await cache.stats();
+    const wsUrl = band.getWebSocketUrl();
 
     return NextResponse.json({
       trial,
@@ -27,6 +32,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       conflicts,
       decisionLogs,
       auditTrail,
+      agentProgress,
+      cacheStats,
+      wsUrl,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

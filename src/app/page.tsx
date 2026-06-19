@@ -3,6 +3,8 @@
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import ThemeToggle from "@/components/ThemeToggle";
+import UserMenu from "@/components/UserMenu";
 
 // ───────────────────────────────────────────────────────────
 // Reusable: reveal on scroll
@@ -286,6 +288,8 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <UserMenu />
+            <ThemeToggle />
             <Link
               href="/dashboard"
               className="rounded-sm bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent"

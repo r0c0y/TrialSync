@@ -126,4 +126,10 @@ export const band = {
       return { success: false, error: err.message };
     }
   },
+
+  // Get WebSocket URL for Phoenix channel subscription
+  getWebSocketUrl: () => {
+    return `${BAND_BASE_URL.replace('https://', 'wss://')}/api/v1/socket/websocket?api_key=${encodeURIComponent(BAND_USER_TOKEN)}&vsn=2.0.0`;
+  },
 };
+

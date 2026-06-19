@@ -113,8 +113,34 @@ export async function POST(req: Request) {
           changeDetails += ` Also updated Statistical Analysis Plan to v${sapVersion} to align with Week 12 endpoint.`;
         }
       }
+    } else if (resolutionOption === 'OVERRIDE') {
+      if (conflictId.includes('ALT') && protocolRecord) {
+        const protocol = protocolRecord.sections_json;
+        protocol.exclusion_criteria = protocol.exclusion_criteria.map((c: string) => {
+          if (c.toLowerCase().includes('alt')) return `Baseline ALT (Human Override): ${customRationale || 'Custom threshold applied.'}`;
+          return c;
+        });
+        const docId = `DOC-PRT-${Date.now()}`;
+        const version = (parseFloat(protocolRecord.version) + 0.1).toFixed(1);
+        await db.createDocument(docId, trialId, `Protocol Draft v${version}`, `Updated Exclusion (Override): ${customRationale}`, 'PROTOCOL', `HASH-${Date.now()}`);
+        await db.saveProtocol(`PRT-${Date.now()}`, trialId, docId, protocol, version);
+        changeDetails = `Human override applied to ALT bounds: ${customRationale}`;
+      } else if (conflictId.includes('RENAL') && protocolRecord) {
+        const protocol = protocolRecord.sections_json;
+        protocol.exclusion_criteria = protocol.exclusion_criteria.map((c: string) => {
+          if (c.toLowerCase().includes('egfr') || c.toLowerCase().includes('renal')) return `Renal impairment (Human Override): ${customRationale || 'Custom threshold applied.'}`;
+          return c;
+        });
+        const docId = `DOC-PRT-${Date.now()}`;
+        const version = (parseFloat(protocolRecord.version) + 0.1).toFixed(1);
+        await db.createDocument(docId, trialId, `Protocol Draft v${version}`, `Updated Exclusion (Override): ${customRationale}`, 'PROTOCOL', `HASH-${Date.now()}`);
+        await db.saveProtocol(`PRT-${Date.now()}`, trialId, docId, protocol, version);
+        changeDetails = `Human override applied to Renal bounds: ${customRationale}`;
+      } else {
+        changeDetails = `Human override applied: ${customRationale}`;
+      }
     } else {
-      changeDetails = `Ignored conflict with rationale: "${customRationale || 'Standard clinical justification.'}"`;
+      changeDetails = `Rejected conflict (maintained design) with rationale: "${customRationale || 'Standard clinical justification.'}"`;
     }
 
     // 3. Create Decision Log
@@ -123,7 +149,7 @@ export async function POST(req: Request) {
       decId,
       trialId,
       `Conflict Resolution: ${conflict.type}`,
-      resolutionOption === 'ACCEPT_RECOMMENDATION' ? 'Accept recommended modifications' : 'Maintain current document language',
+      resolutionOption === 'ACCEPT_RECOMMENDATION' ? 'Approve AI Recommendation' : (resolutionOption === 'OVERRIDE' ? 'Manual Triage Override' : 'Reject (Maintain current document language)'),
       customRationale || 'Aligning protocol with clinical trial evidence signals.',
       changeDetails,
       userEmail
@@ -148,7 +174,7 @@ export async function POST(req: Request) {
           trialId,
           trial.band_room_id,
           'Decision Orchestrator',
-          `Resolved conflict: ${conflict.type} (${conflictId}). Choice: ${resolutionOption === 'ACCEPT_RECOMMENDATION' ? 'Accept Recommendation' : 'Maintain Design'}. Rationale: "${customRationale || 'Standard clinical justification.'}"`
+          `Resolved conflict: ${conflict.type} (${conflictId}). Choice: ${resolutionOption}. Rationale: "${customRationale || 'Standard clinical justification.'}"`
         );
       }
     } catch (err) {
