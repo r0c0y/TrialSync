@@ -107,14 +107,14 @@ try {
 
   valkeyClient.on('error', (err: any) => {
     if (!useFallback) {
-      console.warn('⚠️ BetterDB Agent Cache (Valkey) connection failed. Falling back to local in-memory cache.');
+      console.debug('[Cache] Valkey unavailable, using in-memory cache.');
       useFallback = true;
     }
   });
 
   agentCache = new AgentCache({ client: valkeyClient });
 } catch (err) {
-  console.warn('⚠️ BetterDB Agent Cache failed to initialize. Falling back to local in-memory cache.', err);
+  console.debug('[Cache] Failed to initialize Valkey:', err);
   useFallback = true;
 }
 

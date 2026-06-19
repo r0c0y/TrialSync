@@ -1107,6 +1107,35 @@ export function TrialProvider({ trialId, children }: { trialId: string; children
       setUploading(false);
     }
   };
+  // Auto-seed documents and start agent pipeline automatically on initial empty load
+  useEffect(() => {
+    if (data && data.trial && data.trial.status === 'INITIAL' && (!data.documents || data.documents.length === 0) && !pipelineRunning) {
+      console.log('Auto-seeding new trial workspace...');
+      const seedIndication = data.trial.indication || "Crohn's Disease";
+      
+      const seedWorkspace = async () => {
+        try {
+          const pubmedRes = await fetch('/api/pubmed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trialId, query: seedIndication })
+          });
+          
+          if (pubmedRes.ok) {
+            const pubmedJson = await pubmedRes.json();
+            if (pubmedJson.success && pubmedJson.count > 0) {
+              await fetchData();
+              runPipeline();
+            }
+          }
+        } catch (e) {
+          console.error('Auto-seeding failed:', e);
+        }
+      };
+      
+      seedWorkspace();
+    }
+  }, [data, trialId, fetchData, pipelineRunning]);
 
   return (
     <TrialContext.Provider value={{

@@ -6,6 +6,7 @@ import { TrialProvider, useTrial } from '@/context/TrialContext';
 import WorkspaceNav from '@/components/WorkspaceNav';
 import InteractiveAgentConsole from '@/components/InteractiveAgentConsole';
 import WorkspaceSubnavTabs from '@/components/WorkspaceSubnavTabs';
+import WorkspaceCoPilot from '@/components/WorkspaceCoPilot';
 
 // Inner shell that consumes the TrialContext
 function TrialWorkspaceLayoutInner({ children, trialId }: { children: ReactNode; trialId: string }) {
@@ -42,7 +43,7 @@ function TrialWorkspaceLayoutInner({ children, trialId }: { children: ReactNode;
     pathname === `${base}/coordination`;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans flex flex-col selection:bg-accent/15 selection:text-foreground">
+    <div className="min-h-screen bg-background text-foreground font-sans flex flex-col selection:bg-accent/15 selection:text-foreground relative">
       {/* Shared workspace nav: topbar + sub-nav tabs */}
       <WorkspaceNav
         trial={trial}
@@ -70,6 +71,9 @@ function TrialWorkspaceLayoutInner({ children, trialId }: { children: ReactNode;
           {children}
         </div>
       )}
+
+      {/* Floating Workspace Co-Pilot / Sales Representative Chat Assistant */}
+      <WorkspaceCoPilot />
     </div>
   );
 }
