@@ -15,7 +15,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Trial not found.' }, { status: 404 });
     }
 
-    // Load trial context (defensive)
     let docs = [], brief = null, protocol = null, sap = null, conflictsList = [], decisions = [];
     try {
       docs = (await db.getDocuments(trialId)) || [];
@@ -63,11 +62,22 @@ export async function POST(req: Request) {
       4. Regulatory Compliance Reviewer (Checks design choices against evidence safety bounds, flags conflicts)
       
       You are talking to the Human Clinical Program Lead (the user).
-      Answer their questions about the trial parameters, safety guidelines, and coordination decisions based on the context.
-      If they want to run the pipeline, tell them they can type "/sync" or click the Sync button.
-      If they ask how to resolve a conflict, explain they can type "/fix alt" (to fix liver ALT limits), "/fix renal" (to fix kidney eGFR limits), "/fix endpoint" (to update endpoints), or "/fix all" to resolve all conflicts.
+      You have full context of the current trial. Answer their questions about:
+      - The trial parameters, safety guidelines, and coordination decisions
+      - What the agents are doing or have done
+      - The evidence, protocol, SAP contents
+      - Any conflicts and how to resolve them
       
-      Be extremely professional, scientific, precise, and concise. Do not use verbose conversational filler.
+      If they ask general questions about TrialSync (not trial-specific), answer those too:
+      - What TrialSync is and how it works
+      - How the agents coordinate
+      - Features of the platform
+      - Contact/support info (email: ranchoguruji07@gmail.com)
+      
+      If they want to run the pipeline, tell them to type "/sync" or click the Sync button.
+      If they ask how to resolve a conflict, explain they can type "/fix alt", "/fix renal", "/fix endpoint", or "/fix all".
+      
+      Be professional, helpful, and concise. Use the trial context to give specific answers.
     `;
 
     const prompt = `
@@ -76,36 +86,49 @@ export async function POST(req: Request) {
       
       User Message: "${message}"
       
-      Provide your response as the Decision Orchestrator.
+      Respond helpfully as the Decision Orchestrator. If the user asks a general question about TrialSync, answer it. If they ask about the trial, use the context above.
     `;
 
     let responseText = '';
     try {
-      responseText = await callAgentModel({
-        agentIndex: 5,
-        prompt,
-        systemInstruction
-      });
+      responseText = await callAgentModel({ agentIndex: 5, prompt, systemInstruction });
     } catch (err: any) {
-      console.warn('[Chat Route] LLM call failed, using rule-based chat fallback:', err.message || err);
-      // Rules-based fallback chat if LLM keys are entirely offline
-      const msg = message.toLowerCase();
-      if (msg.includes('alt') || msg.includes('liver') || msg.includes('hepatotoxicity')) {
-        responseText = `[Decision Orchestrator] The Literature Scout flagged baseline ALT > 40 U/L as a high hepatotoxicity risk based on Smith et al. (2023). Currently, the Protocol Designer set the limit to > 100 U/L. You can resolve this by typing "/fix alt" to restrict inclusion criteria to Baseline ALT ≤ 40 U/L.`;
-      } else if (msg.includes('renal') || msg.includes('egfr') || msg.includes('kidney')) {
-        responseText = `[Decision Orchestrator] The Literature Scout identified a renal safety signal starting at eGFR < 60 mL/min/1.73m² (Johnson et al. 2025). The Protocol Designer set the exclusion to < 30 mL/min, which is too permissive. Type "/fix renal" to update the protocol exclusion boundary to < 60 mL/min.`;
-      } else if (msg.includes('endpoint') || msg.includes('week') || msg.includes('power')) {
-        responseText = `[Decision Orchestrator] Literature reviews indicate clinical efficacy peaks at Week 12 (Doe et al. 2024), and Week 8 data is noisy. The Protocol Designer drafted a Week 8 primary endpoint, which has low statistical justification. Type "/fix endpoint" to change the primary endpoint to Week 12.`;
-      } else if (msg.includes('fix') || msg.includes('resolve')) {
-        responseText = `[Decision Orchestrator] To resolve conflicts, you can use these commands in the terminal input:
-        - "/fix alt" - Restrict baseline ALT to <= 40 U/L.
-        - "/fix renal" - Exclude baseline eGFR < 60 mL/min.
-        - "/fix endpoint" - Update primary endpoint analysis to Week 12.
-        - "/fix all" - Resolve all three conflicts simultaneously.`;
-      } else if (msg.includes('sync') || msg.includes('run') || msg.includes('start')) {
-        responseText = `[Decision Orchestrator] You can trigger a full pipeline execution loop by typing "/sync" or clicking the 'Initiate Protocol Sync' button.`;
+      console.warn('[Chat Route] LLM call failed, using comprehensive fallback:', err.message || err);
+      const q = message.toLowerCase();
+      const status = trial.status || 'UNKNOWN';
+      const conflictCount = openConflicts.length;
+
+      if (q.includes('alt') || q.includes('liver') || q.includes('hepatotoxicity')) {
+        const conf = openConflicts.find((c: any) => c.id?.includes('ALT'));
+        responseText = conf
+          ? `[Decision Orchestrator] Conflict ${conf.id}: Evidence flags ALT > 40 U/L as hepatotoxic risk, but protocol uses ALT > 100 U/L. Type "/fix alt" to align the criterion to ≤ 40 U/L.`
+          : `[Decision Orchestrator] No active ALT conflict detected in this trial.`;
+      } else if (q.includes('renal') || q.includes('egfr') || q.includes('kidney')) {
+        const conf = openConflicts.find((c: any) => c.id?.includes('RENAL'));
+        responseText = conf
+          ? `[Decision Orchestrator] Conflict ${conf.id}: Evidence shows renal risk at eGFR < 60, protocol excludes at < 30. Type "/fix renal" to correct.`
+          : `[Decision Orchestrator] No active renal conflict detected in this trial.`;
+      } else if (q.includes('endpoint') || q.includes('week') || q.includes('power')) {
+        const conf = openConflicts.find((c: any) => c.id?.includes('ENDPOINT'));
+        responseText = conf
+          ? `[Decision Orchestrator] Conflict ${conf.id}: Protocol uses Week 8 but evidence supports Week 12. Type "/fix endpoint" to update.`
+          : `[Decision Orchestrator] No active endpoint conflict detected.`;
+      } else if (q.includes('fix') || q.includes('resolve') || q.includes('conflict')) {
+        responseText = conflictCount > 0
+          ? `[Decision Orchestrator] There ${conflictCount === 1 ? 'is 1 open conflict' : `are ${conflictCount} open conflicts`}. Use: "/fix alt", "/fix renal", "/fix endpoint", or "/fix all" to resolve.`
+          : `[Decision Orchestrator] No open conflicts — the trial is on track!`;
+      } else if (q.includes('sync') || q.includes('run') || q.includes('start') || q.includes('pipeline')) {
+        responseText = `[Decision Orchestrator] To trigger the agent pipeline, type "/sync" or click the "Initiate Protocol Sync" button.`;
+      } else if (q.includes('agent') || q.includes('scout') || q.includes('designer') || q.includes('analyst') || q.includes('auditor')) {
+        responseText = `[Decision Orchestrator] TrialSync has 4 agents: Literature Scout (searches evidence), Protocol Designer (drafts criteria), Statistical Analyst (power/SAP), Regulatory Auditor (compliance/FDA). They work sequentially: Scout → Designer → Analyst → Auditor. Each passes context to the next via Band.ai.`;
+      } else if (q.includes('what is') || q.includes('trialsync') || q.includes('trial sync') || q.includes('platform')) {
+        responseText = `[Decision Orchestrator] TrialSync is a multi-agent clinical trial design platform. It coordinates 4 specialist AI agents through Band.ai to automate evidence synthesis, protocol drafting, SAP generation, conflict resolution, and regulatory compliance — all with a 21 CFR Part 11 audit trail.`;
+      } else if (q.includes('contact') || q.includes('support') || q.includes('email') || q.includes('help')) {
+        responseText = `[Decision Orchestrator] For support, email ranchoguruji07@gmail.com. I'm here to help with trial-specific questions too!`;
+      } else if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('what can you do') || q.includes('help')) {
+        responseText = `[Decision Orchestrator] Hi! I'm your TrialSync co-pilot for trial "${trial.name}". I can answer questions about this trial's evidence, protocol, SAP, conflicts, and general questions about TrialSync. Current status: ${status}. ${conflictCount > 0 ? `There ${conflictCount === 1 ? 'is 1' : `are ${conflictCount}`} open conflict${conflictCount > 1 ? 's' : ''} to review.` : 'No open conflicts.'}`;
       } else {
-        responseText = `[Decision Orchestrator] I am TrialSync's central coordinator. I monitor our 4 agents (Scout, Designer, Analyst, and Regulatory Auditor). Currently, the trial status is ${trial.status} and there are ${openConflicts.length} open safety/design conflicts. Type "/help" to view all command parameters.`;
+        responseText = `[Decision Orchestrator] I'm your TrialSync co-pilot for trial "${trial.name}" (${trial.indication}). Current status: ${status}. ${conflictCount > 0 ? `${conflictCount} open conflict${conflictCount > 1 ? 's' : ''} need${conflictCount === 1 ? 's' : ''} review.` : 'All clear.'} I can explain the evidence, protocol, SAP, conflicts, or general platform features. Ask me anything!`;
       }
     }
 

@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 
 export default function ThemeToggle({ className = '' }: { className?: string }) {
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('trialsync-theme');
-    const preferDark = stored ? stored === 'dark' : true;
+    const preferDark = stored ? stored === 'dark' : false;
     setDark(preferDark);
     document.documentElement.classList.toggle('dark', preferDark);
   }, []);
