@@ -403,13 +403,16 @@ Open [http://localhost:3000](http://localhost:3000) — you land on the hero pag
 
 ## Pitch Deck
 
-<a href="/TrialSync%20-%20Hackathon%20Pitch%20Deck.pdf">
+<a href="https://github.com/r0c0y/TrialSync/raw/main/public/TrialSync%20-%20Hackathon%20Pitch%20Deck.pdf" download>
   <img src="https://img.shields.io/badge/Download_Pitch_Deck_PDF-7c3aed?style=for-the-badge" alt="Pitch Deck PDF" />
 </a>
 
-### Demo Video
+### Demo Videos
 
-[![TrialSync Demo](https://img.shields.io/badge/Watch_Demo_Video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://drive.google.com/file/d/1FdZ5QqzWz-qX3RmGhyZzIdtsFlL4iTIi/view?usp=sharing)
+| | |
+|---|---|
+| **Pitch Deck Walkthrough** | [Watch on Google Drive](https://drive.google.com/file/d/1FdZ5QqzWz-qX3RmGhyZzIdtsFlL4iTIi/view?usp=sharing) |
+| **Production Walkthrough** | [Download MP4](https://github.com/r0c0y/TrialSync/raw/main/public/TrialSync%20Production%20Walkthrough%20-Band%20of%20Agents%20Hackathon.mp4) |
 
 ---
 
