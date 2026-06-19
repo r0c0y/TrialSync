@@ -123,6 +123,8 @@ export async function POST(req: Request) {
         responseText = `[Decision Orchestrator] TrialSync has 4 agents: Literature Scout (searches evidence), Protocol Designer (drafts criteria), Statistical Analyst (power/SAP), Regulatory Auditor (compliance/FDA). They work sequentially: Scout → Designer → Analyst → Auditor. Each passes context to the next via Band.ai.`;
       } else if (q.includes('what is') || q.includes('trialsync') || q.includes('trial sync') || q.includes('platform')) {
         responseText = `[Decision Orchestrator] TrialSync is a multi-agent clinical trial design platform. It coordinates 4 specialist AI agents through Band.ai to automate evidence synthesis, protocol drafting, SAP generation, conflict resolution, and regulatory compliance — all with a 21 CFR Part 11 audit trail.`;
+      } else if (q.includes('band') || q.includes('orchestrat') || q.includes('not working') || q.includes('pro') || q.includes('plan')) {
+        responseText = `[Decision Orchestrator] Band.ai is our orchestration layer. The integration is fully coded — agent registration, rooms, WebSocket streaming — but requires a Band Pro/Enterprise plan for Human API access. Currently our account is on a limited plan. Apply promo code BANDHACK26 on the Band dashboard to upgrade. The app works in demo mode with local orchestration in the meantime.`;
       } else if (q.includes('contact') || q.includes('support') || q.includes('email') || q.includes('help')) {
         responseText = `[Decision Orchestrator] For support, email ranchoguruji07@gmail.com. I'm here to help with trial-specific questions too!`;
       } else if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('what can you do') || q.includes('help')) {

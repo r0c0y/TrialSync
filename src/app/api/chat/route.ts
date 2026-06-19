@@ -119,6 +119,19 @@ Explore the workspace dashboard to see it in action!`;
     return `TrialSync is open source! Check out the code at https://github.com/r0c0y/TrialSync`;
   }
 
+  if (q.includes('band') || q.includes('orchestrat') || q.includes('ai agent') || q.includes('not working') || q.includes('pro') || q.includes('plan')) {
+    return `Band.ai is our agent orchestration layer. The full integration is already implemented in the code — agent registration, room creation, WebSocket event streaming, and message passing are all built out.
+
+However, Band's Human API access requires a **Pro or Enterprise plan**. Our current account is on a limited plan, so agent-to-agent coordination via Band rooms isn't active yet.
+
+Once the account is upgraded (use promo code **BANDHACK26** on the Band dashboard), everything will work seamlessly:
+• Real-time agent activity streaming via WebSocket
+• Band room-based coordination between agents
+• Event-driven pipeline triggers
+
+The app works fully in demo mode with local agent orchestration in the meantime.`;
+  }
+
   return `TrialSync is a clinical trial automation platform that coordinates 4 AI agents (Literature Scout, Protocol Designer, Statistical Analyst, Regulatory Auditor) through Band.ai. It handles evidence synthesis, protocol drafting, SAP generation, conflict resolution, and regulatory compliance.
 
 You can explore the platform by signing in and creating a trial workspace. Need specific help? Email ranchoguruji07@gmail.com.`;
