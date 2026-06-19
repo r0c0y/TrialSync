@@ -285,17 +285,17 @@ export default function Home() {
               <a className="hover:text-foreground transition-colors" href="#agents">Agents</a>
               <a className="hover:text-foreground transition-colors" href="#workflow">Workflow</a>
               <a className="hover:text-foreground transition-colors" href="#compliance">Compliance</a>
-              <Link className="hover:text-foreground transition-colors" href="/dashboard">Workspace</Link>
+              <Link className="hover:text-foreground transition-colors" href="/login">Workspace</Link>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <UserMenu />
             <ThemeToggle />
             <Link
-              href="/dashboard"
+              href="/login"
               className="rounded-sm bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent"
             >
-              Enter Workspace →
+              Sign In →
             </Link>
           </div>
         </div>
@@ -331,10 +331,10 @@ export default function Home() {
           <Reveal delay={0.4}>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <Link
-                href="/dashboard"
+                href="/login"
                 className="group inline-flex items-center gap-2 rounded-sm bg-foreground px-5 py-3 text-sm font-semibold text-background transition-colors hover:bg-accent"
               >
-                Launch Workspace
+                Sign In to Workspace
                 <span className="transition-transform group-hover:translate-x-0.5">→</span>
               </Link>
               <a
@@ -774,10 +774,10 @@ export default function Home() {
           <Reveal delay={0.3}>
             <div className="mx-auto mt-12 flex justify-center">
               <Link
-                href="/dashboard"
+                href="/login"
                 className="rounded-sm bg-foreground px-8 py-4 text-sm font-semibold text-background transition-colors hover:bg-accent"
               >
-                Launch Workspace Board →
+                Get Started →
               </Link>
             </div>
           </Reveal>

@@ -1,16 +1,18 @@
 'use client';
 
-import { use, type ReactNode } from 'react';
+import { use, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { TrialProvider, useTrial } from '@/context/TrialContext';
 import WorkspaceNav from '@/components/WorkspaceNav';
 import InteractiveAgentConsole from '@/components/InteractiveAgentConsole';
 import WorkspaceSubnavTabs from '@/components/WorkspaceSubnavTabs';
 import WorkspaceCoPilot from '@/components/WorkspaceCoPilot';
+import { PanelLeftClose, PanelLeft, ChevronLeft } from 'lucide-react';
 
 // Inner shell that consumes the TrialContext
 function TrialWorkspaceLayoutInner({ children, trialId }: { children: ReactNode; trialId: string }) {
   const pathname = usePathname();
+  const [consoleOpen, setConsoleOpen] = useState(true);
   const { data, loading, currentPipelineAgent } = useTrial();
 
   if (loading) {
@@ -52,14 +54,25 @@ function TrialWorkspaceLayoutInner({ children, trialId }: { children: ReactNode;
       />
 
       {isDocumentPage ? (
-        <div className="flex-1 max-w-[1600px] w-full mx-auto px-8 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="flex-1 max-w-[1600px] w-full mx-auto px-8 py-6 flex gap-6 relative">
+          {/* Console toggle button — positioned between panels when open, at left edge when closed */}
+          <button
+            onClick={() => setConsoleOpen(!consoleOpen)}
+            className="absolute z-10 top-2 -left-3 p-1 rounded-full border border-border bg-background text-muted hover:text-foreground hover:bg-surface transition-all shadow-sm"
+            title={consoleOpen ? 'Close agent console' : 'Open agent console'}
+          >
+            {consoleOpen ? <PanelLeftClose className="w-3.5 h-3.5" /> : <PanelLeft className="w-3.5 h-3.5" />}
+          </button>
+
           {/* Left Side: Interactive Agent Console */}
-          <div className="lg:col-span-2 flex flex-col space-y-6 lg:h-[850px] min-h-[700px]">
-            <InteractiveAgentConsole />
-          </div>
+          {consoleOpen && (
+            <div className="w-[380px] shrink-0 flex flex-col space-y-6 lg:h-[850px] min-h-[700px] animate-fade-right">
+              <InteractiveAgentConsole />
+            </div>
+          )}
 
           {/* Right Side: Main Documents / Editing & Resolution Subpages */}
-          <div className="lg:col-span-2 space-y-6 flex flex-col lg:h-[850px] min-h-[700px]">
+          <div className={`flex-1 min-w-0 space-y-6 flex flex-col lg:h-[850px] min-h-[700px] transition-all duration-300`}>
             <WorkspaceSubnavTabs trialId={trialId} />
             <div className="flex-1 bg-surface/30 border border-border rounded-md p-6 overflow-y-auto min-h-0">
               {children}

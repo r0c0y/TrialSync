@@ -1,38 +1,52 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FlaskConical, GitBranch, Zap, Shield, Users, ArrowRight, CheckCircle } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from') || '/dashboard';
   const [loadingDemo, setLoadingDemo] = useState(false);
   const [loadingGithub, setLoadingGithub] = useState(false);
 
+  useEffect(() => {
+    if (window.location.hash === '#demo') {
+      handleDemoLogin();
+    }
+  }, []);
+
   const handleDemoLogin = async () => {
     setLoadingDemo(true);
-    // Set demo session cookie
+    try {
+      const res = await fetch('/api/auth/demo', { method: 'POST' });
+      if (res.ok) {
+        await new Promise(r => setTimeout(r, 600));
+        router.push(from);
+        return;
+      }
+    } catch {}
     document.cookie = `trialsync_session=${encodeURIComponent(JSON.stringify({
-      email: 'demo@trialsync.ai',
-      name: 'Demo User',
-      role: 'Clinical Program Lead',
+      id: 'demo-user-001',
+      email: 'demo@trialsync.dev',
+      name: 'Clinical Lead (Demo)',
+      role: 'Clinical Research Director',
       isDemo: true,
       avatar: 'D',
     }))}; path=/; max-age=86400; SameSite=Lax`;
     await new Promise(r => setTimeout(r, 800));
-    router.push('/dashboard');
+    router.push(from);
   };
 
   const handleGithubLogin = () => {
     setLoadingGithub(true);
-    // Redirect to real GitHub OAuth route (falls back to demo if GITHUB_ID not configured)
-    window.location.href = '/api/auth/github';
+    window.location.href = `/api/auth/github?from=${encodeURIComponent(from)}`;
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Subtle grid background */}
       <div className="fixed inset-0 pointer-events-none" style={{
         backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.04) 1px, transparent 0)`,
         backgroundSize: '32px 32px',
@@ -44,7 +58,6 @@ export default function LoginPage() {
         zIndex: 0,
       }} />
 
-      {/* Header */}
       <header className="relative z-10 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
@@ -59,11 +72,9 @@ export default function LoginPage() {
         </div>
       </header>
 
-      {/* Main */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-10 items-center">
 
-          {/* Left: Value prop */}
           <div className="animate-fade-up">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/8 border border-accent/15 mb-6">
               <span className="relative flex h-1.5 w-1.5">
@@ -98,7 +109,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Right: Auth card */}
           <div className="animate-fade-up" style={{ animationDelay: '0.15s' }}>
             <div className="rounded-xl border border-border bg-surface/40 backdrop-blur-sm p-8 shadow-xl shadow-black/5">
               <div className="mb-8">
@@ -106,7 +116,6 @@ export default function LoginPage() {
                 <p className="text-xs text-muted">Access the clinical trial coordination platform</p>
               </div>
 
-              {/* Demo Account */}
               <button
                 onClick={handleDemoLogin}
                 disabled={loadingDemo || loadingGithub}
@@ -117,7 +126,7 @@ export default function LoginPage() {
                 </div>
                 <div className="flex-1 text-left">
                   <div className="text-sm font-bold">Try Demo Account</div>
-                  <div className="text-xs opacity-70 font-mono">demo@trialsync.ai · Instant access</div>
+                  <div className="text-xs opacity-70 font-mono">demo@trialsync.dev · Instant access</div>
                 </div>
                 {loadingDemo ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />
@@ -126,14 +135,12 @@ export default function LoginPage() {
                 )}
               </button>
 
-              {/* Divider */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-1 h-px bg-border" />
                 <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted">or</span>
                 <div className="flex-1 h-px bg-border" />
               </div>
 
-              {/* GitHub Login */}
               <button
                 onClick={handleGithubLogin}
                 disabled={loadingDemo || loadingGithub}
@@ -153,7 +160,6 @@ export default function LoginPage() {
                 )}
               </button>
 
-              {/* Features row */}
               <div className="mt-8 pt-6 border-t border-border grid grid-cols-3 gap-3 text-center">
                 {[
                   { label: '6 Live Trials', sub: 'Pre-seeded' },
@@ -178,5 +184,17 @@ export default function LoginPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
