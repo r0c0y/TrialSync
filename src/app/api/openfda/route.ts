@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { db, logAuditTrail } from '@/lib/db';
 import { band } from '@/lib/band';
 
@@ -226,10 +227,9 @@ export async function POST(req: Request) {
     const brandNames = primaryLabel.openfda?.brand_name || [];
     const genericNames = primaryLabel.openfda?.generic_name || [];
 
-    const docId = `DOC-FDA-${drugName.replace(/\s+/g, '-').toUpperCase()}-${Date.now()}`;
-    const hash = `SHA-FDA-${drugName.replace(/\s+/g, '-')}-${Date.now()}`;
-
     const documentContent = formatFDADocument(primaryLabel, adverseEvents, drugName);
+    const contentHash = createHash('sha256').update(documentContent).digest('hex');
+    const docId = `DOC-FDA-${drugName.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase().substring(0, 32)}-${contentHash.substring(0, 8)}`;
 
     // Save to database
     const createdDoc = await db.createDocument(
@@ -238,7 +238,7 @@ export async function POST(req: Request) {
       `FDA Compliance: ${(brandNames[0] || genericNames[0] || drugName).substring(0, 60)} — Safety & Regulatory Profile`,
       documentContent,
       'FDA_COMPLIANCE',
-      hash
+      `SHA256:${contentHash}`
     );
 
     importedDocs.push({
@@ -254,9 +254,9 @@ export async function POST(req: Request) {
     for (let i = 1; i < labelResults.length; i++) {
       const label = labelResults[i];
       const altBrand = label.openfda?.brand_name?.[0] || `${drugName}-formulation-${i + 1}`;
-      const altDocId = `DOC-FDA-${altBrand.replace(/\s+/g, '-').toUpperCase()}-${Date.now()}-${i}`;
-      const altHash = `SHA-FDA-${altBrand.replace(/\s+/g, '-')}-${Date.now()}-${i}`;
       const altContent = formatFDADocument(label, [], drugName);
+      const altHash = createHash('sha256').update(altContent).digest('hex');
+      const altDocId = `DOC-FDA-${altBrand.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase().substring(0, 32)}-${altHash.substring(0, 8)}`;
 
       await db.createDocument(
         altDocId,

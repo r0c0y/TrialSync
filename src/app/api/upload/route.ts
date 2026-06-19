@@ -1,12 +1,28 @@
 import { NextResponse } from 'next/server';
 import { db, logAuditTrail } from '@/lib/db';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-// @ts-ignore
+import { createHash } from 'crypto';
 import mammoth from 'mammoth';
-// @ts-ignore  
 import officeparser from 'officeparser';
 
 const geminiKey = process.env.GEMINI_KEY_1 || process.env.GEMINI_KEY_2 || '';
+
+// LiteParse — optional native module for layout-aware PDF parsing and OCR
+let liteparse: any = null;
+try {
+  const { LiteParse: LP } = require('@llamaindex/liteparse');
+  liteparse = new LP({
+    ocrEnabled: true,
+    ocrLanguage: 'eng',
+    outputFormat: 'text',
+    imageMode: 'placeholder',
+    maxPages: 100,
+    quiet: true,
+  });
+  console.log('[DocParser] LiteParse native module loaded successfully.');
+} catch (e: any) {
+  console.warn('[DocParser] LiteParse native module not available:', e.message);
+}
 
 // Supported file types and their extraction strategies
 const SUPPORTED_EXTENSIONS: Record<string, string> = {
@@ -25,6 +41,13 @@ const SUPPORTED_EXTENSIONS: Record<string, string> = {
   '.json': 'text',
   '.html': 'text',
   '.htm': 'text',
+  '.png': 'image',
+  '.jpg': 'image',
+  '.jpeg': 'image',
+  '.tiff': 'image',
+  '.tif': 'image',
+  '.bmp': 'image',
+  '.webp': 'image',
 };
 
 /**
@@ -68,19 +91,33 @@ export async function POST(req: Request) {
 
     switch (extractionStrategy) {
       case 'pdf': {
-        // Try officeparser first (handles both text and embedded content well)
-        try {
-          const opResult = await officeparser.parseOffice(buffer, {
-            outputErrorToConsole: false
-          });
-          extractedText = String(opResult);
-          parserUsed = 'officeparser';
-          console.log(`[DocParser] officeparser extracted ${extractedText.length} chars from PDF`);
-        } catch (err) {
-          console.warn('[DocParser] officeparser PDF failed, trying pdf-parse:', err);
+        // Stage 1A: LiteParse — local OCR + layout-aware text extraction
+        if (liteparse) {
+          try {
+            const lpResult = await liteparse.parse(buffer);
+            extractedText = lpResult.text;
+            parserUsed = 'liteparse';
+            console.log(`[DocParser] LiteParse extracted ${extractedText.length} chars from PDF`);
+          } catch (lpErr) {
+            console.warn('[DocParser] LiteParse failed, falling back:', lpErr);
+          }
         }
 
-        // Fallback to pdf-parse if officeparser returned nothing
+        // Stage 1B: officeparser fallback
+        if (!extractedText.trim() || extractedText.trim().length < 100) {
+          try {
+            const opResult = await officeparser.parseOffice(buffer, {
+              outputErrorToConsole: false
+            });
+            extractedText = String(opResult);
+            parserUsed = 'officeparser';
+            console.log(`[DocParser] officeparser extracted ${extractedText.length} chars from PDF`);
+          } catch (err) {
+            console.warn('[DocParser] officeparser PDF failed, trying pdf-parse:', err);
+          }
+        }
+
+        // Stage 1C: pdf-parse fallback
         if (!extractedText.trim() || extractedText.trim().length < 100) {
           try {
             const { PDFParse } = await import('pdf-parse');
@@ -91,6 +128,20 @@ export async function POST(req: Request) {
             console.log(`[DocParser] pdf-parse extracted ${extractedText.length} chars`);
           } catch (err) {
             console.warn('[DocParser] pdf-parse also failed:', err);
+          }
+        }
+        break;
+      }
+
+      case 'image': {
+        if (liteparse) {
+          try {
+            const lpResult = await liteparse.parse(buffer);
+            extractedText = lpResult.text;
+            parserUsed = 'liteparse-ocr';
+            console.log(`[DocParser] LiteParse OCR extracted ${extractedText.length} chars from ${fileExtension}`);
+          } catch (imgErr) {
+            console.warn('[DocParser] LiteParse OCR failed for image:', imgErr);
           }
         }
         break;
@@ -234,10 +285,11 @@ export async function POST(req: Request) {
     }
 
     // ─── Save to Database ────────────────────────────────────────
-    const docId = `DOC-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-    const hash = `SHA256-${Buffer.from(extractedText.substring(0, 1000)).toString('base64').substring(0, 32)}`;
+    const contentHash = createHash('sha256').update(extractedText).digest('hex');
+    const fileHash = createHash('sha256').update(buffer).digest('hex');
+    const docId = `DOC-${fileHash.substring(0, 12)}`;
     
-    await db.createDocument(docId, trialId, file.name, extractedText, 'LITERATURE', hash);
+    await db.createDocument(docId, trialId, file.name, extractedText, 'LITERATURE', `SHA256:${contentHash}`);
 
     await logAuditTrail(
       trialId,
@@ -245,7 +297,7 @@ export async function POST(req: Request) {
       'clinical_researcher@pharmacompany.com',
       'Clinical Researcher',
       'Literature Document',
-      `Uploaded and processed: "${file.name}" (${fileExtension}, ${extractedText.length} chars, parser: ${parserUsed}, hash: ${hash}).`,
+      `Uploaded and processed: "${file.name}" (${fileExtension}, ${extractedText.length} chars, parser: ${parserUsed}, hash: ${contentHash}).`,
       'Multi-stage document parsing pipeline completed successfully.'
     );
 

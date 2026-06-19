@@ -11,7 +11,7 @@ const PUBLIC_PATHS = [
   '/favicon',
 ];
 
-export function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow all public paths and static assets

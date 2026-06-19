@@ -1,3 +1,5 @@
+import { createHash } from 'crypto';
+
 /**
  * Veeva Vault Enterprise Integration Adapter
  * Handles OAuth2 authentication and document syncing with Veeva Vault APIs.
@@ -11,6 +13,7 @@ export class VeevaVaultAdapter {
   private readonly baseUrl: string;
   private readonly clientId: string;
   private accessToken: string | null = null;
+  private documentCounter = 0;
 
   private constructor() {
     this.baseUrl = process.env.VEEVA_API_URL || 'https://sandbox.veevavault.com/api/v24.1';
@@ -32,7 +35,7 @@ export class VeevaVaultAdapter {
     
     // Mocked enterprise auth response
     await new Promise(resolve => setTimeout(resolve, 300));
-    this.accessToken = 'mock_veeva_oauth_token_' + Date.now();
+    this.accessToken = 'veeva_oauth_' + createHash('sha256').update(this.clientId + Date.now()).digest('hex').substring(0, 16);
     return this.accessToken;
   }
 
@@ -47,7 +50,11 @@ export class VeevaVaultAdapter {
   ): Promise<{ success: boolean; veevaDocId: string; message: string }> {
     await this.authenticate();
     
-    console.log(`[VeevaVault] Exporting ${documentType} for trial ${trialId}...`);
+    this.documentCounter++;
+    const contentHash = createHash('sha256').update(content).digest('hex').substring(0, 12);
+    const docId = `${documentType.toUpperCase()}-${trialId}-v${this.documentCounter}-${contentHash}`;
+    
+    console.log(`[VeevaVault] Exporting ${documentType} for trial ${trialId} (ID: ${docId})...`);
     
     const payload = {
       type__v: `${documentType.toLowerCase()}__c`,
@@ -55,19 +62,17 @@ export class VeevaVaultAdapter {
       study__v: trialId,
       status__v: 'Draft',
       content: content,
+      documentId: docId,
       ...metadata
     };
 
     // In production: fetch(`${this.baseUrl}/objects/documents`, { ... })
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Simulated successful enterprise upload
-    const mockDocId = `DOC-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-    
     return {
       success: true,
-      veevaDocId: mockDocId,
-      message: `Successfully synchronized ${documentType} to Veeva Vault (ID: ${mockDocId})`
+      veevaDocId: docId,
+      message: `Successfully synchronized ${documentType} to Veeva Vault (ID: ${docId})`
     };
   }
 }
