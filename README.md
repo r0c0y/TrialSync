@@ -9,15 +9,15 @@
   **Multi-Agent Clinical Trial Design Platform** — powered by AI orchestration
 
   <p align="center">
-    <a href="https://trialsync.vercel.app">🚀 Live Demo</a>
+    <a href="https://trialsync.vercel.app">Live Demo</a>
     ·
-    <a href="#-architecture">📐 Architecture</a>
+    <a href="#architecture">Architecture</a>
     ·
-    <a href="#-agents">🤖 Agents</a>
+    <a href="#agents">Agents</a>
     ·
-    <a href="#-quick-start">⚡ Quick Start</a>
+    <a href="#quick-start">Quick Start</a>
     ·
-    <a href="#-pitch-deck">📊 Pitch Deck</a>
+    <a href="#pitch-deck">Pitch Deck</a>
   </p>
 
   <br />
@@ -34,7 +34,7 @@
   <br />
 
   <a href="https://trialsync.vercel.app">
-    <img src="https://img.shields.io/badge/🌐_trialsync.vercel.app-7c3aed?style=for-the-badge&logo=vercel&logoColor=white" alt="Deployed on Vercel" />
+    <img src="https://img.shields.io/badge/trialsync.vercel.app-7c3aed?style=for-the-badge&logo=vercel&logoColor=white" alt="Deployed on Vercel" />
   </a>
 </div>
 
@@ -48,7 +48,7 @@ TrialSync is an **AI-powered clinical trial design platform** where four special
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
@@ -68,7 +68,7 @@ TrialSync is an **AI-powered clinical trial design platform** where four special
 
 ---
 
-## 📐 Architecture
+## Architecture
 
 ### System Architecture
 
@@ -242,7 +242,7 @@ flowchart LR
 
 ---
 
-## 🤖 Agents
+## Agents
 
 Four specialized AI agents collaborate in sequence, each publishing its reasoning to Band.ai for real-time human visibility.
 
@@ -284,7 +284,7 @@ Four specialized AI agents collaborate in sequence, each publishing its reasonin
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -303,7 +303,7 @@ Four specialized AI agents collaborate in sequence, each publishing its reasonin
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -369,7 +369,7 @@ src/
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
 # Prerequisites: Node.js 20+
@@ -401,19 +401,19 @@ Open [http://localhost:3000](http://localhost:3000) — you land on the hero pag
 
 ---
 
-## 📊 Pitch Deck
+## Pitch Deck
 
 <a href="/TrialSync%20-%20Hackathon%20Pitch%20Deck.pdf">
-  <img src="https://img.shields.io/badge/📄_Download_Pitch_Deck_PDF-7c3aed?style=for-the-badge" alt="Pitch Deck PDF" />
+  <img src="https://img.shields.io/badge/Download_Pitch_Deck_PDF-7c3aed?style=for-the-badge" alt="Pitch Deck PDF" />
 </a>
 
 ### Demo Video
 
-[![TrialSync Demo](https://img.shields.io/badge/▶️_Watch_Demo_Video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://drive.google.com/file/d/1FdZ5QqzWz-qX3RmGhyZzIdtsFlL4iTIi/view?usp=sharing)
+[![TrialSync Demo](https://img.shields.io/badge/Watch_Demo_Video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://drive.google.com/file/d/1FdZ5QqzWz-qX3RmGhyZzIdtsFlL4iTIi/view?usp=sharing)
 
 ---
 
-## 🔗 Links
+## Links
 
 - **Live App**: [trialsync.vercel.app](https://trialsync.vercel.app)
 - **GitHub**: [github.com/r0c0y/TrialSync](https://github.com/r0c0y/TrialSync)
@@ -425,7 +425,7 @@ Open [http://localhost:3000](http://localhost:3000) — you land on the hero pag
 
 <div align="center">
   <sub>
-    Built with ❤️ for the Band.ai × Google Gemini Hackathon 2026<br />
+    Built with care for the Band.ai x Google Gemini Hackathon 2026<br />
     Contact: <a href="mailto:ranchoguruji07@gmail.com">ranchoguruji07@gmail.com</a>
   </sub>
 </div>
